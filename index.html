@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffd52a">
+<meta name="description" content="Business Insurance Quotation Generator">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<title>Business Insurance Quotation</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#fff9df;color:#222;margin:0;padding:15px;line-height:1.45}
+.container{max-width:760px;margin:0 auto}
+header{background:#ffd52a;padding:20px 14px;border-radius:12px;text-align:center}
+header h1{font-size:1.45rem;margin:0 0 5px}
+header p{margin:0;font-weight:bold}
+.card{background:#fff;padding:16px;margin-top:15px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+h2{font-size:1.1rem;margin:0 0 14px}
+h3{font-size:1rem;margin:18px 0 10px}
+.field-label{display:block;font-weight:600;margin-top:10px}
+input[type=text],input[type=number]{display:block;width:100%;padding:11px;margin:6px 0 12px;border:1px solid #ccc;border-radius:7px;font-size:16px;background:#fff;color:#222}
+.cover{display:flex;align-items:center;gap:9px;padding:10px;background:#fff9df;margin:7px 0;border-radius:7px;cursor:pointer}
+.cover input{width:18px;height:18px;accent-color:#b58a00}
+button{width:100%;padding:12px;border:0;border-radius:8px;background:#ffd52a;color:#222;font-weight:bold;margin:5px 0;font-size:15px;cursor:pointer}
+.secondary{background:#222;color:#fff}
+.table-wrap{width:100%;overflow-x:auto}
+table{width:100%;border-collapse:collapse;background:#fff}
+td,th{padding:10px 8px;border-bottom:1px solid #ddd;text-align:left}
+th{background:#fff4bd}
+.money{text-align:right;white-space:nowrap}
+.total{background:#ffe477;font-weight:bold}
+.note{color:#555;font-size:.85rem}
+@media(max-width:420px){body{padding:9px}.card{padding:12px}header h1{font-size:1.25rem}td,th{padding:9px 5px;font-size:.9rem}}
+@media print{@page{size:A4;margin:12mm}body{background:#fff;padding:0}.container{max-width:none}.form-area,.buttons,.note{display:none!important}.card{box-shadow:none;margin-top:10px;padding:10px 0}header{background:#ffd52a!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}tr{break-inside:avoid}.total{background:#ffe477!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+</style>
+</head>
+<body>
+<div class="container">
+<header><h1>BUSINESS INSURANCE</h1><p>QUOTATION GENERATOR</p></header>
+<section class="card form-area">
+<h2>BUSINESS DETAILS</h2>
+<label class="field-label" for="business">BUSINESS NAME</label>
+<input id="business" type="text" placeholder="Enter business name" autocomplete="organization">
+<label class="field-label" for="A">VALUE OF BUILDING (Rs.)</label><input id="A" type="number" value="0" min="0" step="any" inputmode="decimal">
+<label class="field-label" for="B">VALUE OF STOCK (Rs.)</label><input id="B" type="number" value="0" min="0" step="any" inputmode="decimal">
+<label class="field-label" for="C">VALUE OF ELECTRIC ITEMS (Rs.)</label><input id="C" type="number" value="0" min="0" step="any" inputmode="decimal">
+<label class="field-label" for="D">VALUE OF GLASSES (Rs.)</label><input id="D" type="number" value="0" min="0" step="any" inputmode="decimal">
+<h3>SELECT COVERS</h3>
+<label class="cover"><input type="checkbox" id="fire" checked> FIRE</label>
+<label class="cover"><input type="checkbox" id="rcc" checked> RCC</label>
+<label class="cover"><input type="checkbox" id="burglary" checked> BURGLARY</label>
+<label class="cover"><input type="checkbox" id="electric" checked> ELECTRIC ITEMS</label>
+<label class="cover"><input type="checkbox" id="glasses" checked> GLASSES</label>
+<label class="cover"><input type="checkbox" id="tc" checked> TC</label>
+<div class="buttons"><button type="button" id="calculateButton">CALCULATE QUOTATION</button><button type="button" class="secondary" id="printButton">PRINT / SAVE PDF</button></div>
+</section>
+<section class="card" id="quotation">
+<h2>QUOTATION SUMMARY</h2>
+<p><b>Business:</b> <span id="businessOut">—</span></p>
+<p><b>Date:</b> <span id="dateOut"></span></p>
+<div class="table-wrap"><table><thead><tr><th>Cover / Fee</th><th class="money">Amount (Rs.)</th></tr></thead><tbody id="rows"></tbody></table></div>
+<p class="note">Rates are calculated using the formulas configured in this tool. Verify rates and taxes before issuing a quotation.</p>
+<div class="buttons"><button type="button" id="savePdfButton">SAVE QUOTATION AS PDF</button></div>
+</section>
+</div>
+<script>
+(function(){
+"use strict";
+const num=id=>{const v=Number(document.getElementById(id).value);return Number.isFinite(v)&&v>0?v:0};
+const money=v=>v.toLocaleString("en-LK",{minimumFractionDigits:2,maximumFractionDigits:2});
+function calculate(){
+const A=num("A"),B=num("B"),C=num("C"),D=num("D");
+const covers=[
+{name:"FIRE",amount:((A+B)/100)*0.3,id:"fire"},
+{name:"RCC",amount:((A+B)/100)*0.05,id:"rcc"},
+{name:"BURGLARY",amount:((A+B)/100)*0.175,id:"burglary"},
+{name:"ELECTRIC ITEMS",amount:(C/100)*0.5,id:"electric"},
+{name:"GLASSES",amount:(D/100)*3,id:"glasses"},
+{name:"TC",amount:((A+B)/100)*0.0375,id:"tc"}];
+let subtotal=0;const rows=[];
+covers.forEach(c=>{if(document.getElementById(c.id).checked){subtotal+=c.amount;rows.push(`<tr><td>${c.name}</td><td class="money">${money(c.amount)}</td></tr>`)}});
+const admin=(subtotal/100)*3,policy=300,vat=(subtotal/100)*18,total=subtotal+admin+policy+vat;
+rows.push(`<tr><td>Cover Premium Subtotal</td><td class="money">${money(subtotal)}</td></tr>`,
+`<tr><td>ADMIN FEE</td><td class="money">${money(admin)}</td></tr>`,
+`<tr><td>POLICY FEE</td><td class="money">${money(policy)}</td></tr>`,
+`<tr><td>VAT</td><td class="money">${money(vat)}</td></tr>`,
+`<tr class="total"><td>TOTAL</td><td class="money">${money(total)}</td></tr>`);
+document.getElementById("rows").innerHTML=rows.join("");
+document.getElementById("businessOut").textContent=document.getElementById("business").value.trim()||"—";
+document.getElementById("dateOut").textContent=new Date().toLocaleDateString("en-GB");
+}
+function printQuotation(){calculate();window.print()}
+document.getElementById("calculateButton").addEventListener("click",calculate);
+document.getElementById("printButton").addEventListener("click",printQuotation);
+document.getElementById("savePdfButton").addEventListener("click",printQuotation);
+["business","A","B","C","D","fire","rcc","burglary","electric","glasses","tc"].forEach(id=>{
+document.getElementById(id).addEventListener("input",calculate);
+document.getElementById(id).addEventListener("change",calculate);
+});
+calculate();
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(()=>{}));
+}
+})();
+</script>
+</body>
+</html>
