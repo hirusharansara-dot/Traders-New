@@ -289,6 +289,17 @@ footer {
             Property Details
         </div>
 
+        <!-- Business Name -->
+        <div class="field">
+            <label for="businessName">Business Name</label>
+            <input
+                type="text"
+                id="businessName"
+                placeholder="Enter business name"
+                autocomplete="organization"
+            >
+        </div>
+
         <div class="field">
             <label for="building">Value of Building (LKR)</label>
             <input
@@ -459,6 +470,7 @@ footer {
 "use strict";
 
 const inputFields = [
+    "businessName",
     "building",
     "stock",
     "electric",
@@ -478,9 +490,11 @@ function getValue(id) {
     const input = document.getElementById(id);
     const value = Number(input.value);
 
-    if (input.value.trim() === "" ||
+    if (
+        input.value.trim() === "" ||
         !Number.isFinite(value) ||
-        value < 0) {
+        value < 0
+    ) {
         return 0;
     }
 
